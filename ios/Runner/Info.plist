@@ -1,4 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<key>NSFileProviderDomainUsageDescription</key>
+<string>We need access to read and write files for exporting and importing your financial data.</string>
+<key>LSSupportsOpeningDocumentsInPlace</key>
+<true/>
+<key>UIFileSharingEnabled</key>
+<true/>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>

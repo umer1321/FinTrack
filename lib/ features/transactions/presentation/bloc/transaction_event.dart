@@ -4,30 +4,31 @@ import 'package:fintrack/core/models/transaction_model.dart';
 abstract class TransactionEvent extends Equatable {
   const TransactionEvent();
   @override
-  List<Object> get props => [];
+  List<Object?> get props => [];
+}
+
+class LoadTransactionsEvent extends TransactionEvent {
+  const LoadTransactionsEvent();
 }
 
 class AddTransactionEvent extends TransactionEvent {
-  final Transaction transaction;
-  const AddTransactionEvent(this.transaction);
+  final Map<String, dynamic> transactionData;
+  const AddTransactionEvent(this.transactionData);
   @override
-  List<Object> get props => [transaction];
+  List<Object?> get props => [transactionData];
 }
 
 class UpdateTransactionEvent extends TransactionEvent {
-  final Transaction transaction;
-  const UpdateTransactionEvent(this.transaction);
+  final String transactionId;
+  final Map<String, dynamic> transactionData;
+  const UpdateTransactionEvent(this.transactionId, this.transactionData);
   @override
-  List<Object> get props => [transaction];
+  List<Object?> get props => [transactionId, transactionData];
 }
 
 class DeleteTransactionEvent extends TransactionEvent {
   final String transactionId;
   const DeleteTransactionEvent(this.transactionId);
   @override
-  List<Object> get props => [transactionId];
-}
-
-class LoadTransactionsEvent extends TransactionEvent {
-  const LoadTransactionsEvent();
+  List<Object?> get props => [transactionId];
 }

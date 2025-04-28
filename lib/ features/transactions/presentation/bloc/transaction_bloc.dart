@@ -6,9 +6,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../data/transaction_repository.dart';
 
 class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
-  final TransactionRepository _transactionRepository = TransactionRepository();
+  final TransactionRepository _transactionRepository;
 
-  TransactionBloc() : super(TransactionInitial()) {
+  TransactionBloc({required TransactionRepository transactionRepository})
+      : _transactionRepository = transactionRepository,
+        super(TransactionInitial()) {
     on<AddTransactionEvent>(_onAddTransaction);
     on<UpdateTransactionEvent>(_onUpdateTransaction);
     on<DeleteTransactionEvent>(_onDeleteTransaction);
@@ -19,11 +21,9 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
       AddTransactionEvent event, Emitter<TransactionState> emit) async {
     emit(TransactionLoading());
     try {
-      await _transactionRepository.addTransaction(event.transaction);
-      emit(TransactionLoaded(
-          await _transactionRepository.getTransactions().first));
+      await _transactionRepository.addTransaction(event.transactionData);
     } catch (e) {
-      emit(TransactionError(e.toString()));
+      emit(TransactionError('Failed to add transaction: $e'));
     }
   }
 
@@ -31,11 +31,10 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
       UpdateTransactionEvent event, Emitter<TransactionState> emit) async {
     emit(TransactionLoading());
     try {
-      await _transactionRepository.updateTransaction(event.transaction);
-      emit(TransactionLoaded(
-          await _transactionRepository.getTransactions().first));
+      await _transactionRepository.updateTransaction(
+          event.transactionId, event.transactionData);
     } catch (e) {
-      emit(TransactionError(e.toString()));
+      emit(TransactionError('Failed to update transaction: $e'));
     }
   }
 
@@ -43,11 +42,12 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
       DeleteTransactionEvent event, Emitter<TransactionState> emit) async {
     emit(TransactionLoading());
     try {
+      if (event.transactionId.isEmpty) {
+        throw Exception('Transaction ID cannot be empty');
+      }
       await _transactionRepository.deleteTransaction(event.transactionId);
-      emit(TransactionLoaded(
-          await _transactionRepository.getTransactions().first));
     } catch (e) {
-      emit(TransactionError(e.toString()));
+      emit(TransactionError('Failed to delete transaction: $e'));
     }
   }
 
@@ -55,10 +55,12 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
       LoadTransactionsEvent event, Emitter<TransactionState> emit) async {
     emit(TransactionLoading());
     try {
-      final transactions = await _transactionRepository.getTransactions().first;
-      emit(TransactionLoaded(transactions));
+      final transactionStream = _transactionRepository.getTransactions();
+      await for (final transactions in transactionStream) {
+        emit(TransactionLoaded(transactions));
+      }
     } catch (e) {
-      emit(TransactionError(e.toString()));
+      emit(TransactionError('Failed to load transactions: $e'));
     }
   }
 }

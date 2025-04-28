@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fintrack/core/models/transaction_model.dart';
 
-import 'package:firebase_auth/firebase_auth.dart';
 
 import '../bloc/transaction_bloc.dart';
 import '../bloc/transaction_event.dart';
@@ -25,22 +24,15 @@ class TransactionFormScreen extends StatelessWidget {
         padding: const EdgeInsets.all(16.0),
         child: TransactionForm(
           transaction: transaction,
-          onSubmit: (data) {
-            final newTransaction = Transaction(
-              id: transaction?.id ?? '',
-              userId: FirebaseAuth.instance.currentUser!.uid,
-              amount: double.parse(data['amount']),
-              type: data['type'],
-              category: data['category'],
-              date: data['date'],
-              description: data['description'],
-            );
+          onSubmit: (transactionData) {
             if (transaction == null) {
-              BlocProvider.of<TransactionBloc>(context)
-                  .add(AddTransactionEvent(newTransaction));
+              BlocProvider.of<TransactionBloc>(context).add(
+                AddTransactionEvent(transactionData),
+              );
             } else {
-              BlocProvider.of<TransactionBloc>(context)
-                  .add(UpdateTransactionEvent(newTransaction));
+              BlocProvider.of<TransactionBloc>(context).add(
+                UpdateTransactionEvent(transaction!.id, transactionData),
+              );
             }
             Navigator.pop(context);
           },
