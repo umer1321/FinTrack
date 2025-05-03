@@ -3,17 +3,19 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:fintrack/routes.dart';
-
 import 'package:fintrack/core/services/firestore_service.dart';
+
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:fintrack/home_screen.dart';
+
 
 import ' features/Budget/bloc/budget_bloc.dart';
 import ' features/auth/presentation/bloc/auth_bloc.dart';
-import ' features/auth/presentation/bloc/auth_state.dart';
-import ' features/auth/presentation/screens/login_screen.dart';
+import ' features/splash_screen.dart';
 import ' features/transactions/presentation/bloc/transaction_bloc.dart';
 import ' features/transactions/presentation/data/transaction_repository.dart';
-import 'home_screen.dart';
+import 'core/services/BillReminderService.dart';
+import 'core/services/NotificationService.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -26,9 +28,17 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final notificationService = NotificationService();
+    final billReminderService = BillReminderService(notificationService: notificationService);
+    final userId = FirebaseAuth.instance.currentUser?.uid ?? '';
+    if (userId.isNotEmpty) {
+      billReminderService.startBillReminders(userId);
+    }
+
     return MultiRepositoryProvider(
       providers: [
         RepositoryProvider(create: (_) => FirestoreService()),
+        RepositoryProvider(create: (_) => notificationService),
       ],
       child: MultiBlocProvider(
         providers: [
@@ -39,15 +49,16 @@ class MyApp extends StatelessWidget {
                 RepositoryProvider.of<FirestoreService>(context),
                 FirebaseAuth.instance,
               ),
+              notificationService: RepositoryProvider.of<NotificationService>(context),
             ),
           ),
           BlocProvider(
             create: (context) => BudgetBloc(
               firestoreService: RepositoryProvider.of<FirestoreService>(context),
               auth: FirebaseAuth.instance,
+              notificationService: RepositoryProvider.of<NotificationService>(context),
             ),
           ),
-
         ],
         child: MaterialApp(
           title: 'FinTrack',
@@ -61,23 +72,9 @@ class MyApp extends StatelessWidget {
               ),
             ),
           ),
-          home: BlocBuilder<AuthBloc, AuthState>(
-            builder: (context, state) {
-              if (state is AuthAuthenticated) {
-                return const HomeScreen();
-              } else if (state is AuthInitial) {
-                return LoginScreen();
-              } else if (state is AuthError) {
-                return Scaffold(
-                  body: Center(child: Text(state.message)),
-                );
-              }
-              return const Scaffold(
-                body: Center(child: CircularProgressIndicator()),
-              );
-            },
-          ),
+          initialRoute: '/splash',
           onGenerateRoute: RouteGenerator.generateRoute,
+          home: const SplashScreen(),
         ),
       ),
     );

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-
 import ' features/Budget/bloc/budget_bloc.dart';
 import ' features/Budget/bloc/budget_event.dart';
 import ' features/Budget/bloc/budget_state.dart';
@@ -15,6 +14,7 @@ import ' features/transactions/presentation/bloc/transaction_bloc.dart';
 import ' features/transactions/presentation/bloc/transaction_event.dart';
 import ' features/transactions/presentation/bloc/transaction_state.dart';
 import ' features/transactions/presentation/screens/transaction_list_screen.dart';
+
 import 'core/models/budget_model.dart';
 import 'core/models/transaction_model.dart';
 
@@ -139,6 +139,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     _exportData();
                   } else if (value == 'import') {
                     _importData();
+                  } else if (value == 'profile') {
+                    Navigator.pushNamed(context, '/profile-settings');
                   }
                 },
                 itemBuilder: (context) => [
@@ -149,6 +151,10 @@ class _HomeScreenState extends State<HomeScreen> {
                   const PopupMenuItem(
                     value: 'import',
                     child: Text('Import Data'),
+                  ),
+                  const PopupMenuItem(
+                    value: 'profile',
+                    child: Text('Profile Settings'),
                   ),
                   const PopupMenuItem(
                     value: 'logout',

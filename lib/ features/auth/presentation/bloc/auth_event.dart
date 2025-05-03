@@ -32,3 +32,17 @@ class ResetPasswordEvent extends AuthEvent {
 class SignOutEvent extends AuthEvent {
   const SignOutEvent();
 }
+
+class MFAEnrollEvent extends AuthEvent {
+  const MFAEnrollEvent(); // Removed phoneNumber since we'll use email
+}
+
+class MFAVerifyEvent extends AuthEvent {
+  final String verificationId;
+  final String code;
+
+  const MFAVerifyEvent(this.verificationId, this.code);
+
+  @override
+  List<Object> get props => [verificationId, code];
+}

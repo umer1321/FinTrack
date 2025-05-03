@@ -1,7 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:equatable/equatable.dart';
 
-class Transaction extends Equatable {
+class Transaction {
   final String id;
   final String userId;
   final double amount;
@@ -10,7 +9,7 @@ class Transaction extends Equatable {
   final DateTime date;
   final String description;
 
-  const Transaction({
+  Transaction({
     required this.id,
     required this.userId,
     required this.amount,
@@ -20,41 +19,40 @@ class Transaction extends Equatable {
     required this.description,
   });
 
-  @override
-  List<Object?> get props => [id, userId, amount, type, category, date, description];
-
   Map<String, dynamic> toMap() {
     return {
-      'id': id,
       'userId': userId,
       'amount': amount,
       'type': type,
       'category': category,
-      'date': Timestamp.fromDate(date),
+      'date': date,
       'description': description,
     };
   }
 
   factory Transaction.fromMap(Map<String, dynamic> map) {
-    DateTime transactionDate;
-    final dateValue = map['date'];
-
-    if (dateValue is Timestamp) {
-      transactionDate = dateValue.toDate();
-    } else if (dateValue is String) {
-      transactionDate = DateTime.parse(dateValue);
-    } else {
-      throw Exception('Invalid date format in Firestore data: $dateValue');
+    print('Mapping transaction data: $map');
+    try {
+      return Transaction(
+        id: map['id'] as String? ?? '',
+        userId: map['userId'] as String? ?? '',
+        amount: map['amount'] is num ? (map['amount'] as num).toDouble() : 0.0,
+        type: map['type'] as String? ?? 'Unknown',
+        category: map['category'] as String? ?? 'Unknown',
+        date: (map['date'] as Timestamp?)?.toDate() ?? DateTime.now(),
+        description: map['description'] as String? ?? 'No description',
+      );
+    } catch (e) {
+      print('Error mapping transaction: $e');
+      return Transaction(
+        id: map['id'] as String? ?? '',
+        userId: map['userId'] as String? ?? '',
+        amount: 0.0,
+        type: 'Unknown',
+        category: 'Unknown',
+        date: DateTime.now(),
+        description: 'Error loading transaction',
+      );
     }
-
-    return Transaction(
-      id: map['id'] ?? '',
-      userId: map['userId'] ?? '',
-      amount: (map['amount'] as num).toDouble(),
-      type: map['type'] ?? '',
-      category: map['category'] ?? '',
-      date: transactionDate,
-      description: map['description'] ?? '',
-    );
   }
 }

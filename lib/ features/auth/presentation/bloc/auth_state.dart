@@ -23,3 +23,18 @@ class AuthError extends AuthState {
   @override
   List<Object> get props => [message];
 }
+
+class MFAEnrollmentRequired extends AuthState {
+  final String verificationId;
+  const MFAEnrollmentRequired(this.verificationId);
+  @override
+  List<Object> get props => [verificationId];
+}
+
+class MFAVerificationFailed extends AuthState {
+  final String verificationId;
+  final String message;
+  const MFAVerificationFailed(this.verificationId, this.message);
+  @override
+  List<Object> get props => [verificationId, message];
+}

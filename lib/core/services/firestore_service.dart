@@ -39,26 +39,26 @@ class FirestoreService {
   }
 
   Stream<List<Transaction>> getTransactions(String userId) {
+    print('Fetching transactions for user: $userId');
     return _firestore
         .collection('users')
         .doc(userId)
         .collection('transactions')
         .snapshots()
-        .map((snapshot) => snapshot.docs.map((doc) {
-      final data = doc.data();
-      data['id'] = doc.id; // Ensure the ID is set in the data map
-      return Transaction.fromMap(data);
-    }).toList());
+        .map((snapshot) {
+      print('Received transaction snapshot with ${snapshot.docs.length} docs');
+      if (snapshot.docs.isEmpty) {
+        print('No transactions found for user: $userId');
+      }
+      return snapshot.docs.map((doc) {
+        final data = doc.data();
+        data['id'] = doc.id; // Ensure the ID is set in the data map
+        print('Processing transaction doc ${doc.id}: $data');
+        return Transaction.fromMap(data);
+      }).toList();
+    });
   }
 
-  /*Future<void> addBudget(String userId, Budget budget) async {
-    await _firestore
-        .collection('users')
-        .doc(userId)
-        .collection('budgets')
-        .doc(budget.id.isEmpty ? null : budget.id)
-        .set(budget.toMap());
-  }*/
   Future<void> addBudget(String userId, Budget budget) async {
     final docRef = _firestore
         .collection('users')
@@ -68,7 +68,7 @@ class FirestoreService {
 
     final budgetMap = budget.toMap();
     if (budget.id.isEmpty) {
-      budgetMap['id'] = docRef.id; // Set the generated ID in the document
+      budgetMap['id'] = docRef.id;
     }
 
     await docRef.set(budgetMap);
@@ -83,14 +83,6 @@ class FirestoreService {
         .update(budget.toMap());
   }
 
- /* Future<void> deleteBudget(String userId, String budgetId) async {
-    await _firestore
-        .collection('users')
-        .doc(userId)
-        .collection('budgets')
-        .doc(budgetId)
-        .delete();
-  }*/
   Future<void> deleteBudget(String userId, String budgetId) async {
     if (budgetId.isEmpty) {
       throw Exception('Budget ID cannot be empty');
@@ -102,7 +94,9 @@ class FirestoreService {
         .doc(budgetId)
         .delete();
   }
+
   Stream<List<Budget>> getBudgets(String userId) {
+    print('Fetching budgets for user: $userId');
     return _firestore
         .collection('users')
         .doc(userId)
@@ -110,7 +104,8 @@ class FirestoreService {
         .snapshots()
         .map((snapshot) => snapshot.docs.map((doc) {
       final data = doc.data();
-      data['id'] = doc.id; // Add the document ID to the data map
+      data['id'] = doc.id;
+      print('Processing budget doc ${doc.id}: $data');
       return Budget.fromMap(data);
     }).toList());
   }

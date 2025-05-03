@@ -1,17 +1,37 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-
 import '../bloc/auth_bloc.dart';
 import '../bloc/auth_event.dart';
 import '../bloc/auth_state.dart';
 import '../widgets/auth_button.dart';
 import '../widgets/auth_text_field.dart';
 
-class LoginScreen extends StatelessWidget {
+class LoginScreen extends StatefulWidget {
+  const LoginScreen({super.key});
+
+  @override
+  State<LoginScreen> createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
-  LoginScreen({super.key});
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  void _login(BuildContext context) {
+    context.read<AuthBloc>().add(
+      LoginEvent(
+        _emailController.text,
+        _passwordController.text,
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -21,12 +41,12 @@ class LoginScreen extends StatelessWidget {
           padding: const EdgeInsets.all(24.0),
           child: BlocConsumer<AuthBloc, AuthState>(
             listener: (context, state) {
-              if (state is AuthAuthenticated) {
-                Navigator.pushReplacementNamed(context, '/home');
-              } else if (state is AuthError) {
+              if (state is AuthError) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(content: Text(state.message)),
                 );
+              } else if (state is AuthAuthenticated) {
+                Navigator.pushReplacementNamed(context, '/home');
               }
             },
             builder: (context, state) {
@@ -79,14 +99,7 @@ class LoginScreen extends StatelessWidget {
                         ? const Center(child: CircularProgressIndicator())
                         : AuthButton(
                       text: 'Log In',
-                      onPressed: () {
-                        context.read<AuthBloc>().add(
-                          LoginEvent(
-                            _emailController.text,
-                            _passwordController.text,
-                          ),
-                        );
-                      },
+                      onPressed: () => _login(context),
                     ),
                     const SizedBox(height: 16),
                     Row(
